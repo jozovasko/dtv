@@ -4,6 +4,10 @@ subtitle: Interaktívne simulácie, modelovanie a tímové prostredia
 badge: MSBA • Krúžok Robotiky & Konštrukcie
 ---
 
+### [Sparkville • Vzdelávací simulátor](https://sparkville.app/sk/)
+*Dominik • Didaktická platforma*
+Interaktívne vzdelávacie prostredie a didaktické simulácie pre tvorivých žiakov od Dominika.
+
 ### [Digitálny Turek (Twin)](https://sites.google.com/view/kempelen-turk-so-arm100-digita/full-page-embed)
 *3D Simulácia*
 Interaktívna 3D kinematika tandemových ramien SO-ARM100 s dosahom nad šachovnicou MagneGrid.

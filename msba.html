@@ -94,6 +94,55 @@
       border-top: 1px solid var(--border);
       padding-top: 1.5rem;
     }
+  
+    /* Vizuálne karty (Grid & Card Layout) */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .card h3 {
+      margin: 0.2rem 0 0.5rem 0;
+      font-size: 1.2rem;
+      color: var(--text);
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+      flex-grow: 1;
+    }
+    .btn {
+      display: inline-block;
+      text-align: center;
+      background: var(--accent);
+      color: #ffffff !important;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.65rem 1rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
   </style>
   
 </head>
@@ -117,6 +166,16 @@
 <main class="page-body">
   
 <div class="grid">
+
+        <div class="card">
+          <div>
+            <span class="badge">Dominik • Didaktická platforma</span>
+            <h3>Sparkville • Vzdelávací simulátor</h3>
+            <p>Interaktívne vzdelávacie prostredie a didaktické simulácie pre tvorivých žiakov od Dominika.</p>
+          </div>
+          <a href="https://sparkville.app/sk/" class="btn" target="_blank">Otvoriť &rarr;</a>
+        </div>
+        
 
         <div class="card">
           <div>
