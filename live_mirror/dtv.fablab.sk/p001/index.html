@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAWT Simulator G4.4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background-color: #ecf0f1; display: flex; justify-content: center; }
+        * { box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div id="vawd-dashboard-v40" style="font-family: monospace; border: 1px solid #2c3e50; padding: 15px; max-width: 1300px; background-color: #ffffff; display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
+    
+    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+        <h3 id="ui-title-v40" style="margin: 0; color: #27ae60; border-bottom: 2px solid #27ae60; padding-bottom: 5px;"></h3>
+        
+        <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+            <label id="ui-wind-lbl-v40" style="font-weight: bold; color: #2980b9;"></label>
+            <input type="range" id="wind-v40" min="0" max="36" value="15" step="0.5" style="width: 100%; cursor: pointer;">
+            <div style="text-align: right;"><span id="val-wind-v40">15.0</span> m/s</div>
+        </div>
+
+        <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+            <label id="ui-time-lbl-v40" style="font-weight: bold; color: #8e44ad;"></label>
+            <input type="range" id="time-v40" min="0" max="1" value="0.2" step="0.05" style="width: 100%; cursor: pointer;">
+            <div style="text-align: right;"><span id="val-time-v40">0.20</span> x</div>
+        </div>
+
+        <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+            <label id="ui-offset-lbl-v40" style="font-weight: bold; color: #e67e22;"></label>
+            <input type="range" id="offset-v40" min="-0.8" max="0.8" value="0" step="0.05" style="width: 100%; cursor: pointer;">
+            <div style="text-align: right;"><span id="val-offset-v40">0.0</span> m</div>
+        </div>
+
+        <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd; border-left: 4px solid #f39c12;">
+            <label id="ui-load-lbl-v44" style="font-weight: bold; color: #f39c12;"></label>
+            <input type="range" id="load-v44" min="0.5" max="50" value="5" step="0.5" style="width: 100%; cursor: pointer;">
+            <div style="text-align: right;"><span id="val-load-v44">5.0</span> <span id="ohm-sym-v44"></span></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px; font-size: 0.85em; text-align: center; border-top: 1px dashed #ccc; padding-top: 8px;">
+                <div><span id="ui-volts-lbl-v44" style="color:#7f8c8d;"></span><br><b id="val-volts-v44">0.0</b></div>
+                <div><span id="ui-amps-lbl-v44" style="color:#7f8c8d;"></span><br><b id="val-amps-v44">0.00</b></div>
+                <div><span id="ui-watts-lbl-v44" style="font-weight:bold; color:#d35400;"></span><br><b id="val-watts-v44" style="color:#d35400; font-size:1.2em;">0</b></div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 5px;">
+            <button id="btn-cfd-v40" onclick="toggleCFD()" style="flex: 1; padding: 10px; background-color: #3498db; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+            <button id="btn-proj-v40" onclick="toggleProjection()" style="flex: 1; padding: 10px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px; font-weight: bold;"></button>
+        </div>
+
+        <button id="btn-audio-v42" onclick="toggleAudio()" style="width: 100%; padding: 10px; background-color: #e74c3c; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.85em;">
+            <div>RPM: <span id="val-rpm-v40" style="font-weight: bold;">0</span></div>
+            <div style="text-align: right;"><span id="ui-mass-lbl-v40"></span> <span id="val-rotor-mass-v40" style="color: #2c3e50; font-weight: bold;">0</span> kg</div>
+            <div style="grid-column: 1 / -1; border-top: 1px dashed #ccc; padding-top: 5px; font-weight: bold;" id="ui-flow-state-v40"></div>
+        </div>
+        
+        <div style="display: flex; gap: 5px; margin-top: auto;">
+            <button id="btn-cam-top-v40" onclick="setCameraView('top')" style="flex: 1; padding: 8px; cursor: pointer; background: #34495e; color: white; border: none; border-radius: 4px;"></button>
+            <button id="btn-cam-side-v40" onclick="setCameraView('side')" style="flex: 1; padding: 8px; cursor: pointer; background: #34495e; color: white; border: none; border-radius: 4px;"></button>
+        </div>
+    </div>
+
+    <div style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+        <h4 id="ui-dim-title-v40" style="margin: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;"></h4>
+        
+        <label id="lbl-rad-v40"></label>
+        <input type="range" id="rad-v40" min="0.8" max="2.5" value="1.2" step="0.1" style="width: 100%; cursor: pointer;">
+        
+        <label id="lbl-h-v40"></label>
+        <input type="range" id="h-v40" min="1.0" max="3.0" value="1.5" step="0.1" style="width: 100%; cursor: pointer;">
+        
+        <label id="lbl-lev-v40"></label>
+        <input type="range" id="lev-v40" min="10" max="40" value="25" step="1" style="width: 100%; cursor: pointer;">
+        
+        <label id="lbl-mass-v40"></label>
+        <input type="range" id="mass-v40" min="1" max="15" value="8" step="0.5" style="width: 100%; cursor: pointer;">
+        
+        <label id="lbl-damp-v40"></label>
+        <input type="range" id="damp-v40" min="1" max="10" value="5" step="1" style="width: 100%; cursor: pointer;">
+
+        <div style="flex: 1; min-height: 220px; position: relative; margin-top: 15px; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+            <canvas id="canvas-params"></canvas>
+        </div>
+    </div>
+
+    <div id="canvas-v40" style="flex: 2; min-width: 450px; height: 600px; background: #ffffff; border: 1px solid #bdc3c7; border-radius: 8px; overflow: hidden; position: relative;"></div>
+
+    <div style="width: 100%; height: 250px; position: relative; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);">
+        <canvas id="canvas-telemetry"></canvas>
+    </div>
+
+</div>
+
+<script src="vawt_globals.js%3Fv=4.4"></script>
+<script src="vawt_math.js%3Fv=4.4"></script>
+<script src="vawt_ui.js%3Fv=4.4"></script>
+<script src="vawt_audio.js%3Fv=4.4"></script>
+<script src="vawt_charts.js%3Fv=4.4"></script>
+<script src="vawt_scene.js%3Fv=4.4"></script>
+<script src="app.js%3Fv=4.4"></script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  {% if badge %}<span class="badge">{{ badge }}</span>{% endif %}
+  <h1>{{ title }}</h1>
+  {% if subtitle %}<p class="lead">{{ subtitle }}</p>{% endif %}
+</header>
+<main class="page-body">
+  {{ body_html | safe }}
+</main>
+{% endblock %}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAWT Simulator V5.4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; padding: 1vh 1vw; background-color: #ecf0f1; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+        
+        .diagram-container { display: flex; flex-direction: column; gap: 10px; padding: 15px; background: #fff; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 10px; }
+        .diagram-row { display: flex; align-items: center; justify-content: center; gap: 10px; text-align: center; font-size: 0.9em; font-weight: bold; }
+        .diagram-box { padding: 10px 15px; border-radius: 4px; border: 2px solid; min-width: 120px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .diagram-arrow { font-size: 1.5em; color: #7f8c8d; }
+        .box-blue { background: #e3f2fd; border-color: #2980b9; color: #2c3e50; }
+        .box-green { background: #e8f8f5; border-color: #27ae60; color: #2c3e50; }
+        .box-orange { background: #fef5e7; border-color: #e67e22; color: #2c3e50; }
+        .box-red { background: #fdedec; border-color: #c0392b; color: #2c3e50; }
+
+        /* Stylovanie pre akordeon */
+        details { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 12px; padding: 10px 15px; transition: background 0.3s; }
+        details[open] { background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        summary { font-size: 1.2em; font-weight: bold; cursor: pointer; padding: 5px 0; outline: none; user-select: none; }
+        summary::-webkit-details-marker { color: #7f8c8d; }
+        .details-content { padding-top: 15px; border-top: 1px solid #eee; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="vawd-dashboard-v40" style="font-family: monospace; border: 1px solid #2c3e50; padding: 15px; width: 100%; max-width: 1800px; height: 98vh; background-color: #ffffff; display: flex; flex-direction: column; gap: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #27ae60; padding-bottom: 5px;">
+        <h3 id="ui-title-v40" style="margin: 0; color: #27ae60;"></h3>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="openDocs()" style="padding: 6px 15px; background: #8e44ad; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;">📖 DOKUMENTÁCIA A NÁVOD</button>
+            <button onclick="window.location.href='../index.html'" style="padding: 6px 15px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;">🏠 NÁVRAT NA ROZCESTNÍK</button>
+        </div>
+    </div>
+
+    <div style="display: flex; flex: 1; gap: 15px; min-height: 0;">
+        <div style="flex: 1; min-width: 280px; max-width: 350px; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; overflow-y: auto;">
+            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                <label id="ui-wind-lbl-v40" style="font-weight: bold; color: #2980b9;"></label>
+                <input type="range" id="wind-v40" min="0" max="36" value="15" step="0.5" style="width: 100%; cursor: pointer;">
+                <div style="text-align: right;"><span id="val-wind-v40">15.0</span> m/s</div>
+            </div>
+            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                <label id="ui-time-lbl-v40" style="font-weight: bold; color: #8e44ad;"></label>
+                <input type="range" id="time-v40" min="0" max="1" value="0.2" step="0.05" style="width: 100%; cursor: pointer;">
+                <div style="text-align: right;"><span id="val-time-v40">0.20</span> x</div>
+            </div>
+            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                <label id="ui-offset-lbl-v40" style="font-weight: bold; color: #e67e22;"></label>
+                <input type="range" id="offset-v40" min="-0.8" max="0.8" value="0" step="0.05" style="width: 100%; cursor: pointer;">
+                <div style="text-align: right;"><span id="val-offset-v40">0.0</span> m</div>
+            </div>
+            <div style="background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd; border-left: 4px solid #f39c12;">
+                <label id="ui-load-lbl-v44" style="font-weight: bold; color: #f39c12;"></label>
+                <input type="range" id="load-v44" min="0.5" max="50" value="5" step="0.5" style="width: 100%; cursor: pointer;">
+                <div style="text-align: right;"><span id="val-load-v44">5.0</span> <span id="ohm-sym-v44"></span></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; font-size: 0.85em; text-align: center; border-top: 1px dashed #ccc; padding-top: 5px;">
+                    <div><span id="ui-volts-lbl-v44" style="color:#7f8c8d;"></span><br><b id="val-volts-v44">0.0</b></div>
+                    <div><span id="ui-amps-lbl-v44" style="color:#7f8c8d;"></span><br><b id="val-amps-v44">0.00</b></div>
+                    <div><span id="ui-watts-lbl-v44" style="font-weight:bold; color:#d35400;"></span><br><b id="val-watts-v44" style="color:#d35400; font-size:1.2em;">0</b></div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <button id="btn-cfd-v40" onclick="toggleCFD()" style="flex: 1; padding: 8px; background-color: #3498db; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;"></button>
+                <button id="btn-proj-v40" onclick="toggleProjection()" style="flex: 1; padding: 8px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 4px; font-weight: bold;"></button>
+            </div>
+            <button id="btn-audio-v42" onclick="toggleAudio()" style="width: 100%; padding: 8px; background-color: #e74c3c; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;"></button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fff; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.85em;">
+                <div>RPM: <span id="val-rpm-v40" style="font-weight: bold;">0</span></div>
+                <div style="text-align: right;"><span id="ui-mass-lbl-v40"></span> <span id="val-rotor-mass-v40" style="color: #2c3e50; font-weight: bold;">0</span> kg</div>
+                <div style="grid-column: 1 / -1; border-top: 1px dashed #ccc; padding-top: 5px; font-weight: bold; text-align: center;" id="ui-flow-state-v40"></div>
+            </div>
+            <div style="display: flex; gap: 5px; margin-top: auto;">
+                <button id="btn-cam-top-v40" onclick="setCameraView('top')" style="flex: 1; padding: 6px; cursor: pointer; background: #34495e; color: white; border: none; border-radius: 4px;"></button>
+                <button id="btn-cam-side-v40" onclick="setCameraView('side')" style="flex: 1; padding: 6px; cursor: pointer; background: #34495e; color: white; border: none; border-radius: 4px;"></button>
+            </div>
+        </div>
+
+        <div style="flex: 1; min-width: 250px; max-width: 320px; display: flex; flex-direction: column; gap: 5px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; overflow-y: auto;">
+            <h4 id="ui-dim-title-v40" style="margin: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;"></h4>
+            <label id="lbl-rad-v40" style="margin-top: 5px; font-size: 0.9em;"></label>
+            <input type="range" id="rad-v40" min="0.8" max="2.5" value="1.2" step="0.1" style="width: 100%; cursor: pointer;">
+            <label id="lbl-h-v40" style="font-size: 0.9em;"></label>
+            <input type="range" id="h-v40" min="1.0" max="3.0" value="1.5" step="0.1" style="width: 100%; cursor: pointer;">
+            <label id="lbl-lev-v40" style="font-size: 0.9em;"></label>
+            <input type="range" id="lev-v40" min="10" max="40" value="25" step="1" style="width: 100%; cursor: pointer;">
+            <label id="lbl-mass-v40" style="font-size: 0.9em;"></label>
+            <input type="range" id="mass-v40" min="1" max="15" value="8" step="0.5" style="width: 100%; cursor: pointer;">
+            <label id="lbl-damp-v40" style="font-size: 0.9em;"></label>
+            <input type="range" id="damp-v40" min="1" max="10" value="5" step="1" style="width: 100%; cursor: pointer;">
+            <div style="flex: 1; min-height: 180px; position: relative; margin-top: 10px; background: #fff; padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+                <canvas id="canvas-params"></canvas>
+            </div>
+        </div>
+
+        <div id="canvas-v40" style="flex: 3; min-width: 400px; background: #ffffff; border: 1px solid #bdc3c7; border-radius: 8px; overflow: hidden; position: relative;"></div>
+    </div>
+
+    <div style="width: 100%; height: 22vh; min-height: 160px; max-height: 250px; position: relative; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);">
+        <canvas id="canvas-telemetry"></canvas>
+    </div>
+</div>
+
+<div id="docs-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="background: #ffffff; padding: 30px; border-radius: 8px; width: 90%; max-width: 1100px; max-height: 90vh; overflow-y: auto; font-family: sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        
+        <div style="position: sticky; top: -30px; background: white; padding: 20px 0 10px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2c3e50; margin-bottom: 20px; z-index: 10;">
+            <h2 style="margin: 0; color: #2c3e50;">📖 Dokumentácia a Návod (VAWT Projekt)</h2>
+            <button onclick="closeDocs()" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;">ZAVRIEŤ (X)</button>
+        </div>
+        
+        <details open style="border-left: 4px solid #2980b9;">
+            <summary style="color: #2980b9;">Čo? (Cieľ projektu)</summary>
+            <div class="details-content">
+                <p style="line-height: 1.6; margin: 0;">Interaktívna pomôcka pre vývoj, modelovanie, simuláciu a optimalizáciu vertikálnej veternej turbíny (VAWT). Systém slúži na praktické osvojenie si metodiky <strong>PLM (Product Lifecycle Management)</strong> pri materializácii nápadov od digitálneho návrhu až po produkciu. Výsledkom je didaktická pomôcka na detailné demonštrovanie fyzikálnych a aerodynamických dejov, ako aj samotné vytvorenie reálneho, funkčného zmenšeného modelu na edukatívne účely.</p>
+            </div>
+        </details>
+        
+        <details style="border-left: 4px solid #27ae60;">
+            <summary style="color: #27ae60;">Prečo? (Motivácia)</summary>
+            <div class="details-content">
+                <p style="line-height: 1.6; margin: 0;">Projekt stojí na dvoch pilieroch:<br>
+                1. <strong>Hardvérová recyklácia:</strong> Využitie starého BLDC (Brushless DC) motora z vyradeného hoverboardu vo funkcii efektívneho generátora elektrickej energie.<br>
+                2. <strong>Softvérová inovácia:</strong> Praktické a experimentálne overenie schopností Umelej Inteligencie (AI) v rovnocennej úlohe partnera pre komplexné inžinierske analýzy a programátorské práce v prostredí JavaScript a WebGL.</p>
+            </div>
+        </details>
+        
+        <details style="border-left: 4px solid #8e44ad;">
+            <summary style="color: #8e44ad;">Ako? (Postup)</summary>
+            <div class="details-content">
+                <p style="line-height: 1.6; margin: 0;">Vývojový cyklus je postavený na iteratívnom AI generovaní kódu, kedy architekt navrhuje logiku a modely a AI ich mení na exaktný kód. Testovanie fyziky a vizuálu prebieha na lokálnom webovom serveri a stabilné verzie sú priebežne verejne publikované prostredníctvom platformy <strong>GitHub (Web)</strong>. Celý priebeh prác a stav architektúry je poctivo a priebežne dokumentovaný.</p>
+            </div>
+        </details>
+
+        <details style="border-left: 4px solid #d35400;">
+            <summary style="color: #d35400;">Bloková schéma (Softvér a Hardvér)</summary>
+            <div class="details-content">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 400px;">
+                        <h4 style="color: #2c3e50; text-align: center; margin-top: 0;">⚙️ Hardvérový Tok (Fyzický model)</h4>
+                        <div class="diagram-container">
+                            <div class="diagram-row">
+                                <div class="diagram-box box-blue">Kinetická energia<br><small>(Vietor)</small></div>
+                                <div class="diagram-arrow">&rarr;</div>
+                                <div class="diagram-box box-green">Aerodynamický Rotor<br><small>(Lopatky a ramená)</small></div>
+                            </div>
+                            <div class="diagram-row"><div class="diagram-arrow">&darr;</div></div>
+                            <div class="diagram-row">
+                                <div class="diagram-box box-orange">Mechanický Regulátor<br><small>(Odstredivé závažia)</small></div>
+                                <div class="diagram-arrow">&larr;</div>
+                                <div class="diagram-box box-orange">Prenos momentu<br><small>(Hriadeľ)</small></div>
+                            </div>
+                            <div class="diagram-row"><div class="diagram-arrow">&darr;</div></div>
+                            <div class="diagram-row">
+                                <div class="diagram-box box-red">Elektrická záťaž<br><small>(Výkon W)</small></div>
+                                <div class="diagram-arrow">&larr;</div>
+                                <div class="diagram-box box-blue">Generátor<br><small>(BLDC Hoverboard motor)</small></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 400px;">
+                        <h4 style="color: #2c3e50; text-align: center; margin-top: 0;">💻 Softvérový Tok (Simulátor)</h4>
+                        <div class="diagram-container">
+                            <div class="diagram-row">
+                                <div class="diagram-box box-blue">Vstupy (UI / DOM)<br><small>(Slider, Tlačidlá)</small></div>
+                                <div class="diagram-arrow">&rarr;</div>
+                                <div class="diagram-box box-green">app.js<br><small>(Hlavná slučka)</small></div>
+                            </div>
+                            <div class="diagram-row"><div class="diagram-arrow">&darr;</div></div>
+                            <div class="diagram-row">
+                                <div class="diagram-box box-orange">vawt_math.js<br><small>(CFD a Výpočty)</small></div>
+                                <div class="diagram-arrow">&harr;</div>
+                                <div class="diagram-box box-green">Matematický Model<br><small>(Moment, RPM)</small></div>
+                            </div>
+                            <div class="diagram-row"><div class="diagram-arrow">&darr;</div></div>
+                            <div class="diagram-row" style="flex-wrap: wrap;">
+                                <div class="diagram-box box-blue">vawt_scene.js<br><small>(3D WebGL)</small></div>
+                                <div class="diagram-box box-orange">vawt_charts.js<br><small>(Telemetria 2D)</small></div>
+                                <div class="diagram-box box-red">vawt_audio.js<br><small>(Zvuk)</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details style="border-left: 4px solid #2c3e50;">
+            <summary style="color: #2c3e50;">🚀 Návod na použitie a testovanie</summary>
+            <div class="details-content" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #3498db; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <strong style="font-size: 1.05em;">1. Testovanie Aerodynamiky (Kármánove víry)</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95em;">Nastavte Rýchlosť vetra na <strong>10 m/s</strong> a zapnite <strong>CFD ZAPNUTÉ</strong>. Všímajte si modré prúdnice v 3D scéne. Lopatky rotora ich budú odrážať (zmena farby na žltú/oranžovú). Toto simuluje obtekanie krídlových profilov a turbulentné prúdenie v úplave turbíny.</p>
+                </div>
+
+                <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #27ae60; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <strong style="font-size: 1.05em;">2. Testovanie Odstredivého Regulátora (Ochrana)</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95em;">Zvýšte rýchlosť vetra na extrémnych <strong>30 m/s</strong>. Všímajte si stredový hriadeľ a posuvnú objímku s dvoma guľatými závažiami. Pri raste RPM (nad 400 otáčok) sa závažia odstredivou silou roztiahnu, čo posunie tiahla a okamžite <strong>zatvorí lopatky</strong>. Aerodynamický odpor klesne, turbína spomalí a prúdnice sa zmenia na červené.</p>
+                </div>
+
+                <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #f39c12; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <strong style="font-size: 1.05em;">3. Testovanie Elektrického Generátora (Záťaž a Výkon)</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95em;">V ľavom paneli venujte pozornosť sekcii <strong>Elektrická záťaž (Odpor)</strong>. Keď má turbína stabilné RPM, skúste <strong>znižovať elektrický odpor (Ω)</strong>. Zníženie odporu znamená vyšší prúd (A), čo vyvinie väčší protichodný elektromagnetický krútiaci moment generátora. Turbína začne fyzicky spomaľovať, ale Wattový výkon môže prechodne stúpnuť. Sledujte osciloskop pre hľadanie optimálneho bodu (MPPT).</p>
+                </div>
+
+                <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #9b59b6; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <strong style="font-size: 1.05em;">4. Konštrukčné a Vizuálne úpravy</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95em;">V strednom paneli meňte <strong>Polomer</strong> a <strong>Výšku</strong>. Graf radaru okamžite zaznamená disproporciu návrhu. Tlačidlami <strong>Pohľad ZHORA / ZBOKU</strong> a prepínačom <strong>REŽIM ORTOGRAFICKÝ (CAD)</strong> si overte presné lícovanie kinetických kĺbov a tiahel bez skreslenia perspektívy.</p>
+                </div>
+                
+                 <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #e74c3c; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <strong style="font-size: 1.05em;">5. Audiovizuálna Analýza</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.95em;">Stlačte <strong>ZAPNÚŤ ZVUK</strong>. Zvuk je generovaný matematicky (žiadne nahraté MP3). Počujete aerodynamický šum, ktorého frekvencia rastie s rýchlosťou vetra, a mechanický zvuk rotora, ktorý presne korešponduje s otáčkami (RPM) generátora.</p>
+                </div>
+            </div>
+        </details>
+
+    </div>
+</div>
+
+<script src="vawt_globals.js%3Fv=5.4"></script>
+<script src="vawt_math.js%3Fv=5.4"></script>
+<script src="vawt_ui.js%3Fv=5.4"></script>
+<script src="vawt_audio.js%3Fv=5.4"></script>
+<script src="vawt_charts.js%3Fv=5.4"></script>
+<script src="vawt_scene.js%3Fv=5.4"></script>
+<script src="app.js%3Fv=5.4"></script>
+
+</body>
+</html>
